@@ -1,0 +1,2 @@
+# Que els scripts PHP sempre siguin LF
+*.php text eol=lf
