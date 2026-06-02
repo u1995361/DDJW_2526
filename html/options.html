@@ -1,20 +1,67 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
-	<head>
-        <script src="../js/options.js" type="module"></script>
-		<title> Memory - Opcions </title>
-	</head>
-	<body>
-		<h1>Opcions</h1>
-        <label for="pairs">Número de cartes</label>
+  <head>
+    <script src="../js/options.js" type="module"></script>
+    <link rel="stylesheet" href="../styles/main.css">
+    <title>Memory - Opcions</title>
+  </head>
+  <body>
+    <h1 id="title">Opcions</h1>
+
+    <div class="options-form">
+
+      <h2 class="subtitle">Mode 1</h2>
+
+      <div class="option-row">
+        <label for="pairs">Nombre de cartes</label>
         <input type="number" id="pairs" value="2" min="2" max="6">
+      </div>
+
+      <div class="option-row">
         <label for="dif">Dificultat</label>
         <select id="dif">
-            <option value="easy">Baixa</option>
-            <option value="normal" selected>Normal</option>
-            <option value="hard">Alta</option>
+          <option value="easy">Baixa</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Alta</option>
         </select>
-        <button id="default">Per defecte</button>
-        <button id="apply">Aplicar</button>
-	</body>
+      </div>
+
+      <div class="option-row">
+        <label for="groupsize">Mida de grup</label>
+        <select id="groupsize">
+          <option value="2" selected>Parelles (×2)</option>
+          <option value="3">Trios (×3)</option>
+          <option value="4">Quartets (×4)</option>
+        </select>
+      </div>
+
+      <h2 class="subtitle">Mode 2</h2>
+
+      <div class="option-row">
+        <label for="startlevel">Nivell inicial</label>
+        <select id="startlevel">
+          <option value="1" selected>Nivell 1 (fàcil)</option>
+          <option value="2">Nivell 2</option>
+          <option value="3">Nivell 3</option>
+          <option value="4">Nivell 4</option>
+          <option value="5">Nivell 5 (difícil)</option>
+        </select>
+      </div>
+
+      <div class="option-row">
+        <label for="groupsize2">Mida de grup inicial</label>
+        <select id="groupsize2">
+          <option value="2" selected>Parelles (×2)</option>
+          <option value="3">Trios (×3)</option>
+          <option value="4">Quartets (×4)</option>
+        </select>
+      </div>
+
+      <div class="options-buttons">
+        <button id="default" class="btn btn-secondary">Per defecte</button>
+        <button id="apply" class="btn">Aplicar</button>
+      </div>
+
+    </div>
+  </body>
 </html>

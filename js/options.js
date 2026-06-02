@@ -1,51 +1,53 @@
 import {$} from "../library/jquery-4.0.0.slim.module.min.js";
 
-var options = function(){
+var options = function () {
+
     const default_options = {
-        pairs: 2,
-        difficulty: 'normal'
-    } 
+        pairs:      2,
+        difficulty: 'normal',
+        groupSize:  2,
+        startLevel: 1,
+        groupSize2: 2
+    };
 
-    var pairs = $('#pairs');
-    var difficulty = $('#dif');
-    
     var savedOptions = localStorage.options && JSON.parse(localStorage.options);
-    var options = Object.create(default_options);
+    var opts = Object.assign({}, default_options, savedOptions || {});
 
-    if (savedOptions && savedOptions.pairs)
-        options.pairs = savedOptions.pairs;
-    if (savedOptions && savedOptions.difficulty)
-        options.difficulty = savedOptions.difficulty;
+    // Inicialitzar inputs
+    $('#pairs').val(opts.pairs);
+    $('#dif').val(opts.difficulty);
+    $('#groupsize').val(opts.groupSize);
+    $('#startlevel').val(opts.startLevel);
+    $('#groupsize2').val(opts.groupSize2);
 
-    pairs.val(options.pairs);
-    difficulty.val(options.difficulty);
-
-    pairs.on('change', function (){
-        options.pairs = pairs.val();
-    });
-
-    difficulty.on('change', function (){
-        options.difficulty = difficulty.val();
-    });
+    // Escoltar canvis
+    $('#pairs').on('change',      function () { opts.pairs      = parseInt($(this).val()); });
+    $('#dif').on('change',        function () { opts.difficulty = $(this).val(); });
+    $('#groupsize').on('change',  function () { opts.groupSize  = parseInt($(this).val()); });
+    $('#startlevel').on('change', function () { opts.startLevel = parseInt($(this).val()); });
+    $('#groupsize2').on('change', function () { opts.groupSize2 = parseInt($(this).val()); });
 
     return {
-        applyChanges: function(){
-            localStorage.options = JSON.stringify(options);
+        applyChanges: function () {
+            localStorage.options = JSON.stringify(opts);
         },
-        defaultValues: function(){
-            options.pairs = default_options.pairs;
-            options.difficulty = default_options.difficulty;
-            pairs.val(options.pairs);
-            difficulty.val(options.difficulty);
+        defaultValues: function () {
+            opts = Object.assign({}, default_options);
+            $('#pairs').val(opts.pairs);
+            $('#dif').val(opts.difficulty);
+            $('#groupsize').val(opts.groupSize);
+            $('#startlevel').val(opts.startLevel);
+            $('#groupsize2').val(opts.groupSize2);
         }
-    }
+    };
+
 }();
 
-$('#default').on('click', function(){
+$('#default').on('click', function () {
     options.defaultValues();
-})
+});
 
-$('#apply').on('click', function(){
+$('#apply').on('click', function () {
     options.applyChanges();
-    location.assign("../");
+    location.assign('../');
 });

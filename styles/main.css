@@ -1,49 +1,177 @@
-/* background */
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-	background-color: lightblue; 
+    background-color: #1a1a2e;
+    color: #eaeaea;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
-#title, .center {
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-/* title */
+/* ── Títol ── */
 #title {
-	color: darkblue; 
-	text-align: center;
-	font-size: 3rem; 
+    color: #ffffff;
+    font-size: 3rem;
+    letter-spacing: 0.15em;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-/* Buttons */
-button.center {
-	width: 8rem;
-	height: 3rem;
-	margin-top: 1rem;
-	background-color: white;
-	border: 2px solid black;
-	cursor: pointer; 
+.subtitle {
+    color: #aaaacc;
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
-/* Hover */
-button.center:hover {
-	background-color: turquoise;
-}
-
-/* Active */
-button.center:active {
-	background-color: palegreen;
-}
-
-#game {
-    display: flex;           /* Activa flexbox para colocar los elementos */
-    flex-wrap: wrap;         /* Permite que las cartas salten a la siguiente línea si no caben */
-    justify-content: center; /* Centra las cartas horizontalmente */
-    gap: 15px;               /* Añade un espacio de separación entre las cartas */
-    max-width: 800px;        /* Limita el ancho máximo para que no se estiren por toda la pantalla */
-    margin: 30px auto;       /* Centra el propio contenedor #game en la página */
-}
-#game img {
+/* ── Botons ── */
+.btn {
+    display: block;
+    width: 12rem;
+    padding: 0.75rem 0;
+    margin: 0.5rem auto;
+    background: transparent;
+    border: 2px solid #ffffff33;
+    color: #eaeaea;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
     cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, border-color 0.15s;
 }
+
+.btn:hover  { background: #ffffff15; border-color: #ffffff66; }
+.btn:active { background: #ffffff25; }
+
+.btn-secondary {
+    border-color: #ffffff1a;
+    color: #aaaacc;
+    font-size: 0.9rem;
+}
+.btn-secondary:hover { background: #ffffff0d; border-color: #ffffff33; }
+
+/* ── Mode cards ── */
+.mode-cards {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.mode-card {
+    background: #16213e;
+    border: 2px solid #ffffff1a;
+    border-radius: 8px;
+    width: 10rem;
+    padding: 1.25rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.mode-card:hover    { border-color: #ffffff44; background: #1e2a4a; }
+.mode-card.selected { border-color: #0097e6;   background: #0c2340; }
+
+.mode-icon  { font-size: 2rem; margin-bottom: 0.5rem; }
+.mode-title { font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem; color: #fff; }
+.mode-desc  { font-size: 0.78rem; color: #8888aa; line-height: 1.4; }
+
+/* ── Alias ── */
+#alias-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+#alias-wrap label { font-size: 0.85rem; color: #aaaacc; }
+
+#alias {
+    background: #16213e;
+    border: 2px solid #ffffff1a;
+    border-radius: 4px;
+    color: #eaeaea;
+    font-size: 1rem;
+    padding: 0.4rem 0.75rem;
+    text-align: center;
+    width: 12rem;
+    outline: none;
+}
+#alias:focus { border-color: #0097e6; }
+
+/* ── Puntuacions ── */
+#scores-list {
+    list-style: none;
+    width: 18rem;
+    margin-bottom: 1.5rem;
+}
+
+#scores-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #ffffff0f;
+    font-size: 0.95rem;
+}
+
+.score-alias { color: #eaeaea; }
+.score-pts   { color: #0097e6; font-weight: bold; }
+.no-scores   { color: #666688; text-align: center; justify-content: center; }
+
+/* ── Opcions form ── */
+.options-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 22rem;
+    max-width: 100%;
+}
+
+.option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.option-row label {
+    font-size: 0.9rem;
+    color: #aaaacc;
+    flex: 1;
+}
+
+.option-row input,
+.option-row select {
+    background: #16213e;
+    border: 2px solid #ffffff1a;
+    border-radius: 4px;
+    color: #eaeaea;
+    font-size: 0.9rem;
+    padding: 0.35rem 0.5rem;
+    width: 8rem;
+    outline: none;
+}
+
+.option-row input:focus,
+.option-row select:focus { border-color: #0097e6; }
+
+.options-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.options-buttons .btn { width: 9rem; }
+
+/* ── Utils ── */
+.hidden { display: none !important; }

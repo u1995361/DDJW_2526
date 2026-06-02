@@ -1,16 +1,50 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
-	<head>
-		<script src="./js/main.js" type="module"></script>
-		<link rel="stylesheet" 
-			href="./styles/main.css">
-		<title> Memory - Menú </title>
-	</head>
-	<body>
-		<h1 id="title">Menú</h1>
-		<button id="play" class="center"> Jugar </button>
-		<button id="options" class="center"> Opcions </button>
-		<button id="saves" class="center"> Partides </button>
-		<button id="exit" class="center"> Sortir </button>
-	</body>
+  <head>
+    <script src="./js/main.js" type="module"></script>
+    <link rel="stylesheet" href="./styles/main.css">
+    <title>Memory - Menú</title>
+  </head>
+  <body>
+    <h1 id="title">Memory</h1>
+
+    <!-- Menú principal -->
+    <div id="menu-main">
+      <button id="play" class="btn">Jugar</button>
+      <button id="scores" class="btn">Puntuacions</button>
+      <button id="options" class="btn">Opcions</button>
+      <button id="saves" class="btn">Carregar</button>
+    </div>
+
+    <!-- Selector de mode -->
+    <div id="menu-mode" class="hidden">
+      <h2 class="subtitle">Tria el mode de joc</h2>
+      <div class="mode-cards">
+        <div class="mode-card" id="mode1">
+          <div class="mode-icon">▶</div>
+          <div class="mode-title">Mode 1</div>
+          <div class="mode-desc">Partida normal. Tries el nombre de cartes, dificultat i mida de grup.</div>
+        </div>
+        <div class="mode-card" id="mode2">
+          <div class="mode-icon">∞</div>
+          <div class="mode-title">Mode 2</div>
+          <div class="mode-desc">Supervivència. Cada nivell la dificultat augmenta automàticament.</div>
+        </div>
+      </div>
+      <div id="alias-wrap">
+        <label for="alias">Àlies</label>
+        <input type="text" id="alias" maxlength="16" placeholder="El teu nom...">
+      </div>
+      <button id="start-game" class="btn">Començar</button>
+      <button id="back-mode" class="btn btn-secondary">Tornar</button>
+    </div>
+
+    <!-- Puntuacions -->
+    <div id="menu-scores" class="hidden">
+      <h2 class="subtitle">Millors puntuacions</h2>
+      <ol id="scores-list"></ol>
+      <button id="back-scores" class="btn btn-secondary">Tornar</button>
+    </div>
+
+  </body>
 </html>
