@@ -1,12 +1,21 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
-	<head>
-        <script src="../js/canvasgame.js" type="module"></script>
-		<title> Memory - Pantalla </title>
-	</head>
-	<body>
-		<h1>Partida</h1>
-        <canvas id="game"> </canvas>
-	</body>
+  <head>
+    <script src="../js/canvasgame.js" type="module"></script>
+    <link rel="stylesheet" href="../styles/game.css">
+    <title>Memory - Partida</title>
+  </head>
+  <body>
+    <div id="hud">
+      <span id="hud-alias"></span>
+      <span id="hud-mode"></span>
+      <span id="hud-level"></span>
+      <span id="hud-groups"></span>
+      <span id="hud-score"></span>
+    </div>
+    <canvas id="game"></canvas>
+    <div id="hud-bottom">
+      <span class="hint">← → ↑ ↓ per moure's · Enter per girar · Esc per guardar</span>
+    </div>
+  </body>
 </html>
-

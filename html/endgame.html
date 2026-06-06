@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../styles/main.css">
+    <title>Memory - Fi de partida</title>
+  </head>
+  <body>
+    <h1 id="title" id="end-title"></h1>
+    <p id="end-msg"></p>
+    <p id="end-score"></p>
+    <button class="btn" onclick="window.location.assign('../')">Tornar al menú</button>
+
+    <script>
+      const won   = sessionStorage.getItem('lastWon')   === '1';
+      const score = sessionStorage.getItem('lastScore')  || 0;
+      const alias = sessionStorage.getItem('alias')      || 'Anònim';
+
+      document.getElementById('title').textContent    = won ? '🎉 Has guanyat!' : '💀 Has perdut';
+      document.getElementById('end-msg').textContent  = won
+          ? `Molt bé, ${alias}!`
+          : `Millor sort la propera vegada, ${alias}.`;
+      document.getElementById('end-score').textContent = `Puntuació final: ${score} pts`;
+    </script>
+  </body>
+</html>
