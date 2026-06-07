@@ -10,14 +10,12 @@ const back = '../resources/back.svg';
 
 const StateCard = Object.freeze({ DISABLE: 0, ENABLE: 1, DONE: 2 });
 
-// ── Paràmetres de dificultat (Mode 1) ─────────────────────────────────────
 const DIFFICULTY = {
     easy:   { penalty: 10, flipDelay: 1200 },
     normal: { penalty: 25, flipDelay: 1000 },
     hard:   { penalty: 50, flipDelay:  600 }
 };
 
-// ── Paràmetres per nivell (Mode 2) ────────────────────────────────────────
 function levelParams(level) {
     const numPairs  = Math.min(2 + Math.floor((level - 1) / 2), 6);
     const penalty   = 25 + Math.floor((level - 1) / 2) * 5;
@@ -26,12 +24,8 @@ function levelParams(level) {
     return { numPairs, penalty, flipDelay, groupSize };
 }
 
-// ── Càlcul de score inicial (Mode 1) ──────────────────────────────────────
-// Cada error possible costa `penalty`, deixem marge per ~60% d'errors
 function initialScore(numPairs, groupSize, penalty) {
-    const totalCards  = numPairs * groupSize;
-    const maxAttempts = totalCards * 2;
-    return maxAttempts * penalty;
+    return numPairs * groupSize * 2 * penalty;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -48,7 +42,13 @@ var game = {
     level:     1,
     penalty:   25,
     flipDelay: 1000,
-    levelUpCb: null,
+
+    // Mode 2
+    lives:     3,
+    maxLives:  3,
+
+    levelUpCb:  null,
+    livesLostCb: null,  // callback quan es perd una vida
 
     goBack: function (idx) {
         this.setValue[idx] && this.setValue[idx](back);
@@ -92,32 +92,36 @@ var game = {
         const mode = parseInt(sessionStorage.mode) || 1;
 
         if (sessionStorage.load) {
-            const s        = JSON.parse(sessionStorage.load);
-            this.items     = s.items;
-            this.states    = s.states;
-            this.selected  = s.selected  || [];
-            this.score     = s.score;
-            this.groups    = s.groups;
-            this.groupSize = s.groupSize  || 2;
-            this.level     = s.level      || 1;
-            this.penalty   = s.penalty    || 25;
-            this.flipDelay = s.flipDelay  || 1000;
-            this.setValue  = [];
+            const s          = JSON.parse(sessionStorage.load);
+            this.items       = s.items;
+            this.states      = s.states;
+            this.selected    = s.selected   || [];
+            this.score       = s.score;
+            this.groups      = s.groups;
+            this.groupSize   = s.groupSize  || 2;
+            this.level       = s.level      || 1;
+            this.penalty     = s.penalty    || 25;
+            this.flipDelay   = s.flipDelay  || 1000;
+            this.lives       = s.lives      ?? 3;
+            this.maxLives    = s.maxLives   || 3;
+            this.setValue    = [];
 
         } else if (mode === 2) {
             const startLevel = parseInt(opts.startLevel) || 1;
-            this.score = 0;
+            this.score    = 0;
+            this.lives    = 3;
+            this.maxLives = 3;
             this.initLevel(startLevel);
 
         } else {
-            // Mode 1: aplicar dificultat
-            const diff     = DIFFICULTY[opts.difficulty] || DIFFICULTY.normal;
-            this.groupSize = parseInt(opts.groupSize) || 2;
-            const numPairs = parseInt(opts.pairs)     || 2;
-            this.penalty   = diff.penalty;
-            this.flipDelay = diff.flipDelay;
-            this.level     = 1;
-            this.score     = initialScore(numPairs, this.groupSize, diff.penalty);
+            const diff       = DIFFICULTY[opts.difficulty] || DIFFICULTY.normal;
+            this.groupSize   = parseInt(opts.groupSize) || 2;
+            const numPairs   = parseInt(opts.pairs)     || 2;
+            this.penalty     = diff.penalty;
+            this.flipDelay   = diff.flipDelay;
+            this.level       = 1;
+            this.lives       = 0;  // Mode 1 no usa vides
+            this.score       = initialScore(numPairs, this.groupSize, diff.penalty);
             this._buildItems(numPairs);
         }
     },
@@ -158,7 +162,8 @@ var game = {
 
             if (this.groups <= 0) {
                 if (mode === 2) {
-                    this.score += this.level * 100 + Math.max(this.score, 0);
+                    // Bonus: nivell × 100 + vides restants × 50
+                    this.score += this.level * 100 + this.lives * 50;
                     setTimeout(() => {
                         this.initLevel(this.level + 1);
                         this.levelUpCb && this.levelUpCb();
@@ -168,7 +173,19 @@ var game = {
                 }
             }
         } else {
-            this.score -= this.penalty;
+            if (mode === 2) {
+                // Mode 2: perdre una vida
+                this.lives--;
+                this.livesLostCb && this.livesLostCb();
+                if (this.lives <= 0) {
+                    setTimeout(() => this._endGame(false), 400);
+                    return;
+                }
+            } else {
+                // Mode 1: perdre punts
+                this.score -= this.penalty;
+            }
+
             this.locked = true;
             const toFlip = this.selected.slice();
             this.selected = [];
@@ -183,18 +200,27 @@ var game = {
     },
 
     _endGame: function (won) {
-        // Guardar al rànquing si ha guanyat
-        if (won) {
-            const ranking = JSON.parse(localStorage.getItem('ranking') || '[]');
+        const mode = parseInt(sessionStorage.mode) || 1;
+
+        if (won || mode === 2) {
+            // Mode 1 guarda si guanya, Mode 2 guarda sempre (és la puntuació final)
+            const key     = `ranking_mode${mode}`;
+            const ranking = JSON.parse(localStorage.getItem(key) || '[]');
             ranking.push({
                 alias: sessionStorage.alias || 'Anònim',
                 score: this.score,
+                level: this.level,
                 date:  Date.now()
             });
-            localStorage.setItem('ranking', JSON.stringify(ranking));
+            // Mantenir només el top 10
+            ranking.sort((a, b) => b.score - a.score);
+            ranking.splice(10);
+            localStorage.setItem(key, JSON.stringify(ranking));
         }
+
         sessionStorage.setItem('lastScore', this.score);
         sessionStorage.setItem('lastWon',   won ? '1' : '0');
+        sessionStorage.setItem('lastLevel', this.level);
         window.location.assign('../html/endgame.html');
     },
 
@@ -209,6 +235,8 @@ var game = {
             level:     this.level,
             penalty:   this.penalty,
             flipDelay: this.flipDelay,
+            lives:     this.lives,
+            maxLives:  this.maxLives,
             mode:      parseInt(sessionStorage.mode) || 1,
             alias:     sessionStorage.alias || 'Anònim',
             date:      Date.now()
@@ -222,14 +250,17 @@ var game = {
 
 function shuffle(arr) { arr.sort(() => Math.random() - 0.5); }
 
-export function selectCards()           { game.select(); }
-export function clickCard(indx)         { game.click(indx); }
-export function startGame()             { game.start(); }
-export function initCard(cb)            { game.setValue.push(cb); }
-export function saveGame()              { game.save(); }
-export function getScore()              { return game.score; }
-export function getLevel()              { return game.level; }
-export function getGroupSize()          { return game.groupSize; }
-export function getGroups()             { return game.groups; }
-export function getGameItems()          { return game.items; }
-export function onLevelUp(cb)           { game.levelUpCb = cb; }
+export function selectCards()          { game.select(); }
+export function clickCard(indx)        { game.click(indx); }
+export function startGame()            { game.start(); }
+export function initCard(cb)           { game.setValue.push(cb); }
+export function saveGame()             { game.save(); }
+export function getScore()             { return game.score; }
+export function getLevel()             { return game.level; }
+export function getLives()             { return game.lives; }
+export function getMaxLives()          { return game.maxLives; }
+export function getGroupSize()         { return game.groupSize; }
+export function getGroups()            { return game.groups; }
+export function getGameItems()         { return game.items; }
+export function onLevelUp(cb)          { game.levelUpCb = cb; }
+export function onLivesLost(cb)        { game.livesLostCb = cb; }

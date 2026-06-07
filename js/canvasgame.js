@@ -1,8 +1,8 @@
 import { $ } from "../library/jquery-4.0.0.slim.module.min.js";
 import {
-    clickCard, selectCards, startGame,
-    initCard, saveGame, getScore, getLevel,
-    getGroupSize, getGroups, getGameItems, onLevelUp
+    clickCard, selectCards, startGame, initCard, saveGame,
+    getScore, getLevel, getLives, getMaxLives,
+    getGroupSize, getGroups, getGameItems, onLevelUp, onLivesLost
 } from "./memory.js";
 
 const C_W      = 96;
@@ -24,6 +24,7 @@ const hudMode   = document.getElementById('hud-mode');
 const hudLevel  = document.getElementById('hud-level');
 const hudGroups = document.getElementById('hud-groups');
 const hudScore  = document.getElementById('hud-score');
+const hudLives  = document.getElementById('hud-lives');
 const $game     = $('#game');
 const ctx       = $game[0].getContext('2d');
 
@@ -31,6 +32,7 @@ selectCards();
 buildBoard();
 bindEvents();
 onLevelUp(rebuildBoard);
+onLivesLost(() => banner = { text: `♥ ${getLives()}`, alpha: 1.0, color: '#e84118' });
 startGame();
 requestAnimationFrame(loop);
 
@@ -48,8 +50,8 @@ function buildBoard() {
     hudMode.textContent  = `Mode ${sessionStorage.mode || 1}`;
 
     cards = items.map((src, indx) => {
-        const col = indx % cols;
-        const row = Math.floor(indx / cols);
+        const col  = indx % cols;
+        const row  = Math.floor(indx / cols);
         const card = {
             texture: src,
             x: PAD + col * (C_W + GAP),
@@ -67,7 +69,7 @@ function buildBoard() {
 function rebuildBoard() {
     buildBoard();
     startGame();
-    banner = { text: `Nivell ${getLevel()}!`, alpha: 1.0 };
+    banner = { text: `Nivell ${getLevel()}!`, alpha: 1.0, color: '#0097e6' };
 }
 
 function bindEvents() {
@@ -112,7 +114,7 @@ function draw() {
         ctx.save();
         ctx.globalAlpha = banner.alpha;
         ctx.font        = 'bold 48px Segoe UI';
-        ctx.fillStyle   = '#0097e6';
+        ctx.fillStyle   = banner.color || '#0097e6';
         ctx.textAlign   = 'center';
         ctx.shadowColor = '#000a';
         ctx.shadowBlur  = 12;
@@ -154,9 +156,14 @@ function updateHUD() {
     const mode = parseInt(sessionStorage.mode) || 1;
     hudScore.textContent  = `Punts: ${getScore()}`;
     hudGroups.textContent = `Grups: ${getGroups()}`;
-    hudLevel.textContent  = mode === 2
-        ? `Nivell ${getLevel()} · ×${getGroupSize()}`
-        : `×${getGroupSize()}`;
+
+    if (mode === 2) {
+        hudLevel.textContent = `Nivell ${getLevel()} · ×${getGroupSize()}`;
+        hudLives.textContent = '♥'.repeat(getLives()) + '♡'.repeat(getMaxLives() - getLives());
+    } else {
+        hudLevel.textContent = `×${getGroupSize()}`;
+        hudLives.textContent = '';
+    }
 }
 
 // ─────────────────────────────────────────────

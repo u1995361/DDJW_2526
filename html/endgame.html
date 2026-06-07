@@ -5,21 +5,28 @@
     <title>Memory - Fi de partida</title>
   </head>
   <body>
-    <h1 id="title" id="end-title"></h1>
+    <h1 id="title"></h1>
     <p id="end-msg"></p>
     <p id="end-score"></p>
+    <p id="end-level"></p>
     <button class="btn" onclick="window.location.assign('../')">Tornar al menú</button>
 
     <script>
       const won   = sessionStorage.getItem('lastWon')   === '1';
       const score = sessionStorage.getItem('lastScore')  || 0;
+      const level = sessionStorage.getItem('lastLevel')  || 1;
       const alias = sessionStorage.getItem('alias')      || 'Anònim';
+      const mode  = parseInt(sessionStorage.getItem('mode')) || 1;
 
       document.getElementById('title').textContent    = won ? '🎉 Has guanyat!' : '💀 Has perdut';
       document.getElementById('end-msg').textContent  = won
           ? `Molt bé, ${alias}!`
           : `Millor sort la propera vegada, ${alias}.`;
       document.getElementById('end-score').textContent = `Puntuació final: ${score} pts`;
+
+      if (mode === 2) {
+          document.getElementById('end-level').textContent = `Nivell assolit: ${level}`;
+      }
     </script>
   </body>
 </html>
