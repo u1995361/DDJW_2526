@@ -225,7 +225,11 @@ var game = {
     },
 
     save: function () {
+        const existingSaveId = sessionStorage.getItem('saveId') || null;
+        const saveId = existingSaveId || `save_${Date.now()}`;
+
         const toSave = {
+            saveId,
             items:     this.items,
             states:    this.states,
             selected:  this.selected,
@@ -241,9 +245,18 @@ var game = {
             alias:     sessionStorage.alias || 'Anònim',
             date:      Date.now()
         };
+
         const saves = JSON.parse(localStorage.getItem('saves') || '[]');
-        saves.push(toSave);
+        const idx   = saves.findIndex(s => s.saveId === saveId);
+
+        if (idx >= 0) {
+            saves[idx] = toSave;
+        } else {
+            saves.push(toSave);
+        }
+
         localStorage.setItem('saves', JSON.stringify(saves));
+        sessionStorage.setItem('saveId', saveId);
         window.location.assign('../');
     }
 };

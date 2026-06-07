@@ -195,3 +195,52 @@ body {
 
 /* ── Vides (HUD joc) ── */
 #hud-lives { color: #e84118; letter-spacing: 0.1em; }
+
+/* ── Partides guardades ── */
+#saves-list {
+    list-style: none;
+    width: 26rem;
+    max-width: 100%;
+    margin-bottom: 1rem;
+}
+
+.save-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #ffffff0f;
+}
+
+.save-item:hover { background: #ffffff05; }
+
+.save-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+}
+
+.save-alias { font-weight: bold; color: #eaeaea; font-size: 0.95rem; }
+.save-meta  { color: #0097e6; font-size: 0.8rem; }
+.save-date  { color: #555577; font-size: 0.75rem; }
+
+.save-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.btn-small {
+    width: 6rem;
+    padding: 0.3rem 0;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.btn-delete {
+    border-color: #e8411822;
+    color: #e84118;
+}
+.btn-delete:hover { background: #e8411810; border-color: #e84118; }
