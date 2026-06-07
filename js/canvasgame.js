@@ -91,7 +91,7 @@ function loop() {
 }
 
 function draw() {
-    ctx.reset();
+    ctx.clearRect(0, 0, $game[0].width, $game[0].height);
 
     cards.forEach((card, indx) => {
         const res = resources[card.texture];
@@ -142,10 +142,10 @@ function handleInput() {
         const cols = Math.min(cards.length, MAX_COLS);
         switch (key) {
             case 'Escape':     saveGame(); break;
-            case 'ArrowRight': idxSel = (idxSel + 1) % cards.length; break;
-            case 'ArrowLeft':  idxSel = ((idxSel - 1) + cards.length) % cards.length; break;
-            case 'ArrowDown':  idxSel = Math.min(idxSel + cols, cards.length - 1); break;
-            case 'ArrowUp':    idxSel = Math.max(idxSel - cols, 0); break;
+            case 'ArrowRight': idxSel = idxSel < 0 ? 0 : (idxSel + 1) % cards.length; break;
+            case 'ArrowLeft':  idxSel = idxSel < 0 ? cards.length - 1 : ((idxSel - 1) + cards.length) % cards.length; break;
+            case 'ArrowDown':  idxSel = idxSel < 0 ? 0 : Math.min(idxSel + cols, cards.length - 1); break;
+            case 'ArrowUp':    idxSel = idxSel < 0 ? 0 : Math.max(idxSel - cols, 0); break;
             case 'Enter':      if (idxSel >= 0) clickCard(idxSel); break;
         }
         key = null;

@@ -112,6 +112,12 @@ var game = {
             this.lives    = 3;
             this.maxLives = 3;
             this.initLevel(startLevel);
+            // Respectar groupSize2 de les opcions si és major que el calculat per nivell
+            const optsGroupSize2 = parseInt(opts.groupSize2) || 2;
+            if (optsGroupSize2 > this.groupSize) {
+                this.groupSize = optsGroupSize2;
+                this._buildItems(levelParams(startLevel).numPairs);
+            }
 
         } else {
             const diff       = DIFFICULTY[opts.difficulty] || DIFFICULTY.normal;
@@ -127,8 +133,10 @@ var game = {
     },
 
     start: function () {
+        this.ready = 0;  // reset sempre abans de comptar
         this.items.forEach((_, indx) => {
             if (this.states[indx] !== StateCard.ENABLE) {
+                // Carta ja encertada (DONE) o girada (DISABLE): compta directament
                 this.ready++;
             } else {
                 setTimeout(() => {
@@ -177,10 +185,6 @@ var game = {
                 // Mode 2: perdre una vida
                 this.lives--;
                 this.livesLostCb && this.livesLostCb();
-                if (this.lives <= 0) {
-                    setTimeout(() => this._endGame(false), 400);
-                    return;
-                }
             } else {
                 // Mode 1: perdre punts
                 this.score -= this.penalty;
@@ -192,7 +196,10 @@ var game = {
             setTimeout(() => {
                 toFlip.forEach(i => this.goBack(i));
                 this.locked = false;
-                if (mode === 1 && this.score <= 0) {
+                // Comprovar fi de partida després de girar les cartes
+                if (mode === 2 && this.lives <= 0) {
+                    this._endGame(false);
+                } else if (mode === 1 && this.score <= 0) {
                     this._endGame(false);
                 }
             }, 800);
