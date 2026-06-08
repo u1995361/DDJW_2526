@@ -53,16 +53,27 @@ function buildBoard() {
         const col  = indx % cols;
         const row  = Math.floor(indx / cols);
         const card = {
-            texture: src,
+            texture: '../resources/back.svg',  // comença mostrant el dorso
             x: PAD + col * (C_W + GAP),
             y: PAD + row * (C_H + GAP)
         };
-        loadResource(src);
+        loadResource(src);                     // pre-carrega la imatge frontal
         initCard(val => { card.texture = val; });
         return card;
     });
 
     loadResource('../resources/back.svg');
+
+    // Si és una partida carregada, mostrar les cartes ja encertades (DONE)
+    if (sessionStorage.getItem('load')) {
+        const { states, items } = JSON.parse(sessionStorage.getItem('load'));
+        cards.forEach((card, i) => {
+            if (states && states[i] === 2) {  // StateCard.DONE = 2
+                card.texture = items[i];
+            }
+        });
+    }
+
     idxSel = -1;
 }
 
