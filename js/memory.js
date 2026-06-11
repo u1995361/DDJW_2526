@@ -1,10 +1,10 @@
 const resources = [
-    '../resources/card_circle_red.svg',
-    '../resources/card_square_red.svg',
-    '../resources/card_triangle_red.svg',
-    '../resources/card_circle_blue.svg',
-    '../resources/card_square_blue.svg',
-    '../resources/card_triangle_blue.svg'
+    '../resources/cr.svg',
+    '../resources/sr.svg',
+    '../resources/tr.svg',
+    '../resources/cb.svg',
+    '../resources/sb.svg',
+    '../resources/tb.svg'
 ];
 const back = '../resources/back.svg';
 

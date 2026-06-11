@@ -10,11 +10,27 @@ const C_H      = 128;
 const GAP      = 12;
 const PAD      = 20;
 const MAX_COLS = 6;
+const BACK     = '../resources/back.svg';
 
-let resources = {};
-let cards     = [];
-let idxSel    = -1;
-let banner    = null;
+// Cache d'imatges: path -> { img, ready }
+const imgCache = {};
+
+function getImg(src) {
+    if (!imgCache[src]) {
+        const img   = new Image();
+        const entry = { img, ready: false };
+        img.onload  = () => { entry.ready = true; };
+        img.onerror = () => { entry.ready = true; }; // no bloquejar si falla
+        img.src     = src;
+        imgCache[src] = entry;
+    }
+    return imgCache[src];
+}
+
+let cards      = [];
+let idxSel     = -1;
+let banner     = null;
+let gameStarted = false;
 
 const e_click = { click: false, x: 0, y: 0 };
 let key = null;
@@ -26,15 +42,16 @@ const hudGroups = document.getElementById('hud-groups');
 const hudScore  = document.getElementById('hud-score');
 const hudLives  = document.getElementById('hud-lives');
 const $game     = $('#game');
-const ctx       = $game[0].getContext('2d');
+const canvas    = $game[0];
+const ctx       = canvas.getContext('2d');
 
 selectCards();
 buildBoard();
 bindEvents();
 onLevelUp(rebuildBoard);
 onLivesLost(() => banner = { text: `♥ ${getLives()}`, alpha: 1.0, color: '#e84118' });
-startGame();
 requestAnimationFrame(loop);
+waitAndStart();
 
 // ─────────────────────────────────────────────
 
@@ -43,51 +60,87 @@ function buildBoard() {
     const cols  = Math.min(items.length, MAX_COLS);
     const rows  = Math.ceil(items.length / cols);
 
-    $game.attr('width',  PAD * 2 + cols * C_W + (cols - 1) * GAP);
-    $game.attr('height', PAD * 2 + rows * C_H + (rows - 1) * GAP);
+    canvas.width  = PAD * 2 + cols * C_W + (cols - 1) * GAP;
+    canvas.height = PAD * 2 + rows * C_H + (rows - 1) * GAP;
 
     hudAlias.textContent = sessionStorage.alias || 'Anònim';
     hudMode.textContent  = `Mode ${sessionStorage.mode || 1}`;
+
+    getImg(BACK);
+    items.forEach(src => getImg(src));
 
     cards = items.map((src, indx) => {
         const col  = indx % cols;
         const row  = Math.floor(indx / cols);
         const card = {
-            texture: '../resources/back.svg',  // comença mostrant el dorso
+            frontSrc:   src,
+            currentSrc: src,  // comença mostrant la frontal (startGame la girarà)
             x: PAD + col * (C_W + GAP),
             y: PAD + row * (C_H + GAP)
         };
-        loadResource(src);                     // pre-carrega la imatge frontal
-        initCard(val => { card.texture = val; });
+        initCard(newSrc => { card.currentSrc = newSrc; });
         return card;
     });
 
-    loadResource('../resources/back.svg');
-
-    // Si és una partida carregada, mostrar les cartes ja encertades (DONE)
+    // Partida carregada: DONE mostra frontal, la resta mostra dorso
     if (sessionStorage.getItem('load')) {
-        const { states, items } = JSON.parse(sessionStorage.getItem('load'));
+        const saved = JSON.parse(sessionStorage.getItem('load'));
         cards.forEach((card, i) => {
-            if (states && states[i] === 2) {  // StateCard.DONE = 2
-                card.texture = items[i];
-            }
+            card.currentSrc = (saved.states && saved.states[i] === 2)
+                ? card.frontSrc
+                : BACK;
         });
     }
 
     idxSel = -1;
 }
 
+function waitAndStart() {
+    const entries = Object.values(imgCache);
+    let pending   = entries.filter(e => !e.ready).length;
+
+    const tryStart = () => {
+        if (!gameStarted) {
+            gameStarted = true;
+            startGame();
+        }
+    };
+
+    if (pending === 0) { tryStart(); return; }
+
+    entries.forEach(entry => {
+        if (!entry.ready) {
+            const orig = entry.img.onload;
+            entry.img.onload = () => {
+                orig && orig();
+                pending--;
+                if (pending === 0) tryStart();
+            };
+            const origErr = entry.img.onerror;
+            entry.img.onerror = () => {
+                origErr && origErr();
+                pending--;
+                if (pending === 0) tryStart();
+            };
+        }
+    });
+}
+
 function rebuildBoard() {
+    gameStarted = false;
     buildBoard();
-    startGame();
+    waitAndStart();
     banner = { text: `Nivell ${getLevel()}!`, alpha: 1.0, color: '#0097e6' };
 }
 
 function bindEvents() {
     $game.on('click', function (e) {
+        const rect  = canvas.getBoundingClientRect();
+        const scaleX = canvas.width  / rect.width;
+        const scaleY = canvas.height / rect.height;
         e_click.click = true;
-        e_click.x = e.pageX - this.offsetLeft;
-        e_click.y = e.pageY - this.offsetTop;
+        e_click.x = (e.clientX - rect.left) * scaleX;
+        e_click.y = (e.clientY - rect.top)  * scaleY;
     });
     $(document).keydown(e => { key = e.key; });
 }
@@ -102,26 +155,35 @@ function loop() {
 }
 
 function draw() {
-    ctx.clearRect(0, 0, $game[0].width, $game[0].height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     cards.forEach((card, indx) => {
-        const res = resources[card.texture];
-        if (!res?.ready) return;
+        const entry = imgCache[card.currentSrc];
+
+        // Placeholder mentre carrega
+        if (!entry || !entry.ready) {
+            ctx.fillStyle   = '#16213e';
+            ctx.strokeStyle = '#ffffff22';
+            ctx.lineWidth   = 2;
+            ctx.beginPath();
+            ctx.roundRect(card.x, card.y, C_W, C_H, 8);
+            ctx.fill();
+            ctx.stroke();
+            return;
+        }
 
         if (idxSel === indx) {
             ctx.save();
             ctx.shadowColor = '#0097e6';
             ctx.shadowBlur  = 14;
-            ctx.drawImage(res.img, card.x - 2, card.y - 2, C_W + 4, C_H + 4);
+            ctx.drawImage(entry.img, card.x - 2, card.y - 2, C_W + 4, C_H + 4);
             ctx.restore();
         } else {
-            ctx.drawImage(res.img, card.x, card.y, C_W, C_H);
+            ctx.drawImage(entry.img, card.x, card.y, C_W, C_H);
         }
     });
 
     if (banner) {
-        const w = parseInt($game.attr('width'));
-        const h = parseInt($game.attr('height'));
         ctx.save();
         ctx.globalAlpha = banner.alpha;
         ctx.font        = 'bold 48px Segoe UI';
@@ -129,7 +191,7 @@ function draw() {
         ctx.textAlign   = 'center';
         ctx.shadowColor = '#000a';
         ctx.shadowBlur  = 12;
-        ctx.fillText(banner.text, w / 2, h / 2);
+        ctx.fillText(banner.text, canvas.width / 2, canvas.height / 2);
         ctx.restore();
         banner.alpha -= 0.025;
         if (banner.alpha <= 0) banner = null;
@@ -175,15 +237,4 @@ function updateHUD() {
         hudLevel.textContent = `×${getGroupSize()}`;
         hudLives.textContent = '';
     }
-}
-
-// ─────────────────────────────────────────────
-
-function loadResource(src) {
-    if (resources[src]) return;
-    const img  = new Image();
-    img.src    = src;
-    const res  = { img, ready: false };
-    img.onload = () => res.ready = true;
-    resources[src] = res;
 }
